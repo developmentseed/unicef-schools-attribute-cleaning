@@ -1,2 +1,2 @@
 # unicef-schools-attribute-cleaning
-UNICEF school attribute data cleaning
+UNICEF schools attribute data cleaning

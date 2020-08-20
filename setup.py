@@ -1,41 +1,43 @@
-#!/usr/bin/env python
-from setuptools import setup, find_packages
-from imp import load_source
-from os import path
-import io
+"""unicef_schools_attribute_cleaning module."""
 
-__version__ = load_source('unicef_schools_attribute_cleaning.version', 'unicef_schools_attribute_cleaning/version.py').__version__
+from setuptools import find_packages, setup
 
-here = path.abspath(path.dirname(__file__))
+with open("README.md") as f:
+    readme = f.read()
 
-# get the dependencies and installs
-with io.open(path.join(here, 'requirements.txt'), encoding='utf-8') as f:
-    all_reqs = f.read().split('\n')
+# Runtime Requirements.
+inst_reqs = ["click"]
 
-install_requires = [x.strip() for x in all_reqs if 'git+' not in x]
-dependency_links = [x.strip().replace('git+', '') for x in all_reqs if 'git+' not in x]
+# Dev Requirements
+extra_reqs = {
+    "test": ["pytest", "pytest-cov"],
+    "dev": ["pytest", "pytest-cov", "pre-commit"],
+}
+
 
 setup(
-    name='PACKAGENAME',
-    author='',
-    author_email='',
-    version=__version__,
-    description='python-seed',
-    url='https://github.com/',
-    license='MIT',
+    name="unicef_schools_attribute_cleaning",
+    version="0.0.1",
+    description=u"An Awesome python module",
+    long_description=readme,
+    long_description_content_type="text/markdown",
+    python_requires=">=3",
     classifiers=[
-        'Intended Audience :: Developers',
-        'License :: OSI Approved :: MIT License',
-        'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6',
+        "Intended Audience :: Information Technology",
+        "Intended Audience :: Science/Research",
+        "License :: OSI Approved :: BSD License",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
     ],
-    keywords='',
-    entry_points={
-        'console_scripts': ['PACKAGENAME=PACKAGENAME.main:cli'],
-    },
-    packages=find_packages(exclude=['docs', 'tests*']),
+    keywords="An Awesome python module",
+    author=u"",
+    author_email="",
+    url="",
+    packages=find_packages(exclude=["ez_setup", "examples", "tests"]),
     include_package_data=True,
-    install_requires=install_requires,
-    dependency_links=dependency_links,
+    zip_safe=False,
+    install_requires=inst_reqs,
+    extras_require=extra_reqs,
+    entry_points={"console_scripts": ["unicef_schools_attribute_cleaning = unicef_schools_attribute_cleaning.scripts.cli:unicef_schools_attribute_cleaning"]},
 )

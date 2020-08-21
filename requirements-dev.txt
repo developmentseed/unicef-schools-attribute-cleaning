@@ -1,4 +1,3 @@
-# requirements.txt
-#
-# installs dependencies from ./setup.py, and the package itself.
--e .
+pytest
+pytest-cov
+pre-commit

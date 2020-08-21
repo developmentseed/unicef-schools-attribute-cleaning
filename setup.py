@@ -39,5 +39,9 @@ setup(
     zip_safe=False,
     install_requires=inst_reqs,
     extras_require=extra_reqs,
-    entry_points={"console_scripts": ["unicef_schools_attribute_cleaning = unicef_schools_attribute_cleaning.scripts.cli:unicef_schools_attribute_cleaning"]},
+    entry_points={
+        "console_scripts": [
+            "unicef_schools_attribute_cleaning = unicef_schools_attribute_cleaning.scripts.cli:unicef_schools_attribute_cleaning"
+        ]
+    },
 )

@@ -6,7 +6,7 @@ with open("README.md") as f:
     readme = f.read()
 
 # Runtime Requirements.
-inst_reqs = ["click", "pydantic", "pydantic[email]"]
+inst_reqs = ["click", "pydantic", "email-validator"]
 
 # Dev Requirements
 extra_reqs = {

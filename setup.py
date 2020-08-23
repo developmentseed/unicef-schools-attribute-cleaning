@@ -12,8 +12,10 @@ inst_reqs = [
     "defusedxml~=0.6.0",
     "iso3166~=1.0.1",
     "openpyxl~=3.0.5",
+    "pandas~=1.1.1",
     "pydantic[email]",
     "pydantic~=1.6.1",
+    "fuzzywuzzy[speedup]",
     "xlrd~=1.2.0",
 ]
 

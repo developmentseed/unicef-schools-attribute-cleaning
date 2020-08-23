@@ -3,3 +3,5 @@ pydantic~=1.6.1
 setuptools~=49.6.0
 click~=7.1.2
 iso3166~=1.0.1
+pandas~=1.1.1
+fuzzywuzzy~=0.18.0

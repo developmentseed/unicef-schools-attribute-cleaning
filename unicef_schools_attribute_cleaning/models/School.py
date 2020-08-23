@@ -1,7 +1,7 @@
 """
 Pydantic model for Schools, sourced from the schema in Project_Connect_School_Schema_UNICEF_DB.xlsx
 """
-
+import logging
 from datetime import datetime
 from math import isclose
 from typing import Optional
@@ -23,6 +23,7 @@ from pydantic import (
 from .Connectivity import Connectivity
 from .EducationLevel import EducationLevel
 from .Environment import Environment
+from .fuzzy_alias_generator import generate_aliases
 from .Latitude import Latitude
 from .Longitude import Longitude
 from .Percentage import Percentage
@@ -30,10 +31,18 @@ from .SchoolType import SchoolType
 from .TowerTypeService import TowerTypeService
 
 
+def to_camel(string: str) -> str:
+    """TODO"""
+    return "".join(word.capitalize() for word in string.split("_"))
+
+
 class School(BaseModel):
     """Pydantic model"""
 
-    # TODO validate country_code vs list of ISO codes
+    class Config:
+        """TODO"""
+
+        alias_generator = to_camel
 
     country_code: constr(min_length=2, max_length=2) = Field(
         ...
@@ -54,8 +63,8 @@ class School(BaseModel):
     person_contact: Optional[str]  # string: name
     email: Optional[EmailStr]
     postal_code: Optional[str]
-    lon: Longitude = Field(...)  # longitude (Required)
-    lat: Latitude = Field(...)  # latitude (Required)
+    lon: Longitude = Field(..., alias="longitude")  # longitude (Required)
+    lat: Latitude = Field(..., alias="latitude")  # latitude (Required)
     altitude: Optional[
         confloat(ge=-411, le=8850)
     ]  # number[m]  min and max are for the world (meters)
@@ -141,4 +150,11 @@ class School(BaseModel):
                 raise ValueError(
                     f"invalid tower_latitude/longitude of 0,0 for {name} ({uuid})"
                 )
+        return values
+
+    @root_validator(pre=True)
+    def fuzzy_match_column_names(cls, values):
+        """TODO"""
+        aliases = generate_aliases(values.keys())
+        logging.warning(aliases)
         return values

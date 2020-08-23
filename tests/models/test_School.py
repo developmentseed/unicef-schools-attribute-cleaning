@@ -118,11 +118,14 @@ def test_speed_connectivity():
     fields = src_fields.copy()
     fields["speed_connectivity"] = 99999
     School.parse_obj(fields)
+
     fields["speed_connectivity"] = 10000000
     School.parse_obj(fields)
+
     fields["speed_connectivity"] = -100
     with pytest.raises(ValidationError):
         School.parse_obj(fields)
+
     fields["speed_connectivity"] = 99900000
     with pytest.raises(ValidationError):
         School.parse_obj(fields)
@@ -135,9 +138,30 @@ def test_latency_connectivity():
     fields = src_fields.copy()
     fields["latency_connectivity"] = 100  # ms
     School.parse_obj(fields)
+
     fields["latency_connectivity"] = -100
     with pytest.raises(ValidationError):
         School.parse_obj(fields)
+
     fields["latency_connectivity"] = 6000
+    with pytest.raises(ValidationError):
+        School.parse_obj(fields)
+
+
+def test_country_code():
+    """
+    Assert that an bad ISO country code is invalid.
+    """
+    fields = src_fields.copy()
+    fields["country_code"] = "MX"  # Mexico
+    School.parse_obj(fields)
+
+    fields[
+        "country_code"
+    ] = "ZY"  # unassigned code per https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2#ES
+    with pytest.raises(ValidationError):
+        School.parse_obj(fields)
+
+    fields["country_code"] = "*(&"
     with pytest.raises(ValidationError):
         School.parse_obj(fields)

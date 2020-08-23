@@ -8,10 +8,13 @@ with open("README.md") as f:
 # Runtime Requirements.
 inst_reqs = [
     "click~=7.1.2",
-    "pydantic~=1.6.1",
     "email-validator~=1.1.1",
-    "pydantic[email]",
+    "defusedxml~=0.6.0",
     "iso3166~=1.0.1",
+    "openpyxl~=3.0.5",
+    "pydantic[email]",
+    "pydantic~=1.6.1",
+    "xlrd~=1.2.0",
 ]
 
 # Dev Requirements

@@ -63,10 +63,16 @@ src_fields = dict(
 
 
 def test_school_constructor():
+    """
+    Assert the School constructor basically works.
+    """
     School.parse_obj(src_fields)
 
 
 def test_required_fields():
+    """
+    Assert that removing a required field is invalid.
+    """
     src_missing_fields = src_fields.copy()
     src_missing_fields["owner"] = None  # clear a required field
     with pytest.raises(ValidationError):
@@ -74,28 +80,64 @@ def test_required_fields():
 
 
 def test_location_not_null_island():
-    assert False
+    """
+    Assert that lat,lng of 0,0 is never valid.
+    """
+    fields = src_fields.copy()
+    fields["lat"] = 0.0
+    fields["lon"] = 0.0
+    with pytest.raises(ValidationError):
+        School.parse_obj(fields)
 
 
 def test_tower_location_not_null_island():
-    assert False
-
-
-def test_gps_confidence_percentage():
-    assert False
+    """
+   Assert that tower_latitude, lower_longitude of 0,0 is never valid.
+   """
+    fields = src_fields.copy()
+    fields["tower_latitude"] = 0.0
+    fields["tower_longitude"] = 0.0
+    with pytest.raises(ValidationError):
+        School.parse_obj(fields)
 
 
 def test_altitude_ok():
-    assert False
+    """
+    Assert that an impossible altitude is invalid.
+    """
+    fields = src_fields.copy()
+    fields["altitude"] = 9000
+    with pytest.raises(ValidationError):
+        School.parse_obj(fields)
 
 
 def test_speed_connectivity():
-    assert False
+    """
+    Assert that an impossible Internet bandwidth value is invalid.
+    """
+    fields = src_fields.copy()
+    fields["speed_connectivity"] = 99999
+    School.parse_obj(fields)
+    fields["speed_connectivity"] = 10000000
+    School.parse_obj(fields)
+    fields["speed_connectivity"] = -100
+    with pytest.raises(ValidationError):
+        School.parse_obj(fields)
+    fields["speed_connectivity"] = 99900000
+    with pytest.raises(ValidationError):
+        School.parse_obj(fields)
 
 
 def test_latency_connectivity():
-    assert False
-
-
-def availability_connectivity():
-    assert False
+    """
+    Assert that an impossible Internet latency value is invalid.
+    """
+    fields = src_fields.copy()
+    fields["latency_connectivity"] = 100  # ms
+    School.parse_obj(fields)
+    fields["latency_connectivity"] = -100
+    with pytest.raises(ValidationError):
+        School.parse_obj(fields)
+    fields["latency_connectivity"] = 6000
+    with pytest.raises(ValidationError):
+        School.parse_obj(fields)

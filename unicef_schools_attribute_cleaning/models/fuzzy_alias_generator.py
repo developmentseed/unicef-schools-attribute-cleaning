@@ -1,5 +1,5 @@
 """
-TODO
+TODO refactor/move into standardize_column_names
 """
 import json
 import logging
@@ -22,7 +22,11 @@ known_aliases = f"{my_dir}/School_aliases.json"
 
 def generate_aliases(src_column_names: list) -> dict:
     """
-    TODO
+
+    :param src_column_names:
+    :type src_column_names: list
+    :return:
+    :rtype:
     """
     result = dict()
     for src_column_name in src_column_names:

@@ -1,6 +1,6 @@
 """
-School aliases: these were logged as "manual_fix" fields in the map data team's validation work.
-The canonical field name and it's aliases will be used as input to the fuzzy matcher, if no exact matches are found.
+School aliases: these were logged as "manual_fix" fields in devseed map data team's validation work.
+The canonical field name and it's aliases will be used as inputs to the fuzzy matcher, if no exact matches are found.
 """
 
 School_aliases = dict(
@@ -19,9 +19,9 @@ School_aliases = dict(
     person_contact=["contact"],
     email=[],
     postal_code=["zip code", "zip"],
-    lon=["longitude", "lng"],
-    lat=["latitude"],
-    altitude=[],
+    lon=["longitude", "lng", "geopointlongitude"],
+    lat=["latitude", "geopointlatitude"],
+    altitude=["geopointaltitude"],
     gps_confidence=[],
     date=[],
     num_students=["enrollment"],

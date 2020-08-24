@@ -79,6 +79,12 @@ def test_required_fields():
         School.parse_obj(src_missing_fields)
 
 
+def test_enumerated_field():
+    src = src_fields.copy()
+    src["type_connectivity"] = "2G"  # clear a required field
+    School.parse_obj(src)
+
+
 def test_location_not_null_island():
     """
     Assert that lat,lng of 0,0 is never valid.

@@ -6,6 +6,12 @@ This is a hack/workaround for the fuzzy_alias_generator.py module having a circu
 """
 from unicef_schools_attribute_cleaning.models.School import School
 
-schema = School.schema_json()
-with open("School_schema.json", "w") as fp:
-    fp.write(schema)
+
+def _main():
+    schema = School.schema_json()
+    with open("../models/School_schema.json", "w") as fp:
+        fp.write(schema)
+
+
+if __name__ == "__main__":
+    _main()

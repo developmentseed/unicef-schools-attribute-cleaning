@@ -30,19 +30,20 @@ from .Percentage import Percentage
 from .SchoolType import SchoolType
 from .TowerTypeService import TowerTypeService
 
-
-def to_camel(string: str) -> str:
-    """TODO"""
-    return "".join(word.capitalize() for word in string.split("_"))
+#
+# def to_camel(string: str) -> str:
+#     """TODO"""
+#     return "".join(word.capitalize() for word in string.split("_"))
 
 
 class School(BaseModel):
     """Pydantic model"""
 
-    class Config:
-        """TODO"""
-
-        alias_generator = to_camel
+    #
+    # class Config:
+    #     """TODO"""
+    #
+    #     alias_generator = to_camel
 
     country_code: constr(min_length=2, max_length=2) = Field(
         ...
@@ -63,8 +64,8 @@ class School(BaseModel):
     person_contact: Optional[str]  # string: name
     email: Optional[EmailStr]
     postal_code: Optional[str]
-    lon: Longitude = Field(..., alias="longitude")  # longitude (Required)
-    lat: Latitude = Field(..., alias="latitude")  # latitude (Required)
+    lon: Longitude = Field(...)  # longitude (Required)
+    lat: Latitude = Field(...)  # latitude (Required)
     altitude: Optional[
         confloat(ge=-411, le=8850)
     ]  # number[m]  min and max are for the world (meters)

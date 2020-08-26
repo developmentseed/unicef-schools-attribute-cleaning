@@ -46,7 +46,8 @@ src_fields = dict(
     water=None,
     electricity=None,
     num_latrines=None,
-    provider=None,
+    provider="devseed",
+    provider_is_private=False,
     description=None,
     last_update=None,
     tower_dist=None,
@@ -57,7 +58,6 @@ src_fields = dict(
     tower_longitude=None,
     owner="pydantic",
     is_private=False,
-    provider_is_private=False,
     uuid=None,
 )
 
@@ -74,7 +74,7 @@ def test_required_fields():
     Assert that removing a required field is invalid.
     """
     src_missing_fields = src_fields.copy()
-    src_missing_fields["owner"] = None  # clear a required field
+    src_missing_fields["provider"] = None  # clear a required field
     with pytest.raises(ValidationError):
         School.parse_obj(src_missing_fields)
 

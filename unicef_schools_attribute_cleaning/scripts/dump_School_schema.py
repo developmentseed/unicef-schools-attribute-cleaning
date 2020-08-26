@@ -3,6 +3,8 @@
 """
 Dump the Pydantic model's fields into a json file.
 This is a hack/workaround for the standardize_column_names.py module having a circular import with the School.py.
+
+TODO: is this still needed?
 """
 
 import inspect

@@ -82,7 +82,8 @@ class School(BaseModel):
     water: Optional[bool]  # Yes / No
     electricity: Optional[bool]  # Yes / No
     num_latrines: Optional[PositiveInt]  # of latrines
-    provider: Optional[str]
+    provider: str = Field(...)  # provider aka source (Required)
+    provider_is_private: bool = Field(...)  # (Required)
     description: Optional[str]
     last_update: Optional[datetime]
     tower_dist: Optional[PositiveFloat]  # number[km]
@@ -91,9 +92,7 @@ class School(BaseModel):
     tower_code: Optional[str]
     tower_latitude: Optional[Latitude]
     tower_longitude: Optional[Longitude]
-    owner: str = Field(...)  # ProCo(vs UNICEF, ...) (Required)
     is_private: bool = Field(...)  # (Required)
-    provider_is_private: bool = Field(...)  # (Required)
     # TODO: make uuid required in output schema?
     uuid: Optional[
         UUID

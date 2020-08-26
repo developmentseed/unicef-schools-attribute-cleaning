@@ -7,6 +7,7 @@ with open("README.md") as f:
 
 # Runtime Requirements.
 inst_reqs = [
+    "aenum~=2.2.4",
     "click~=7.1.2",
     "email-validator~=1.1.1",
     "defusedxml~=0.6.0",
@@ -15,7 +16,8 @@ inst_reqs = [
     "pandas~=1.1.1",
     "pydantic[email]",
     "pydantic~=1.6.1",
-    "fuzzywuzzy[speedup]",
+    "python-Levenshtein~=0.12.0",
+    "fuzzywuzzy==0.18.0",
     "xlrd~=1.2.0",
 ]
 

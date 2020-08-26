@@ -1,59 +1,115 @@
 """
-1. Use known column aliases from ../models/School_aliases to rename columns.
-2. Uses fuzzy matching to select source columns we are using and match them with the column names
-in the output schema.
+Utilities for converting between source column names and School schema column names.
 """
 import logging
 from functools import lru_cache
+from pprint import pformat
+from typing import Dict, List
 
+from fuzzywuzzy import process
 from pandas import DataFrame
 
 from unicef_schools_attribute_cleaning.models.School import School
 from unicef_schools_attribute_cleaning.models.School_aliases import School_aliases
 
 
-@lru_cache(maxsize=None)
-def _unpack_column_aliases() -> dict:
+@lru_cache()
+def school_schema_column_names() -> List[str]:
+    """Fetch list of column names from the School model."""
+    return School.schema()["properties"].keys()
+
+
+@lru_cache()
+def _unpack_school_column_aliases() -> Dict[str, List[str]]:
     """
     Unpack the known aliases for lookup table of alias_column_name -> schema_column_name.
     :return: lookup table.
     :rtype: dict
     :raises: ValueError if an alias has more than one mapping to a schema column
     """
-
-    # initialize the lookup table with the canonical column names, always map to same name.
-    schema_column_names = School.schema()["properties"].keys()
-    result = {k: k for k in schema_column_names}
-
+    result = dict()
     # add to the lookup table all the known aliases from School_aliases module
     for (schema_column_name, aliases) in School_aliases.items():
         for alias_column_name in aliases:
             k = alias_column_name.lower()
             v = schema_column_name.lower()
             if result.get(k) is not None:
-                raise ValueError(f"duplicate alias for column name: {k}")
+                raise ValueError(f"duplicate alias {v} for column name: {k}")
             result[k] = v
     return result
 
 
-def standardize_column_names(df: DataFrame, inplace=True) -> DataFrame:
+def standardize_column_names(
+    df: DataFrame, inplace=True, fuzzy=True, fuzzy_score_cutoff=90
+) -> DataFrame:
     """
-    Modify in place DataFrame by renaming columns.
-    :param df:
-    :type df: DataFrame
-    :return: df with standardized column names
-    :rtype: DataFrame
+    Modify DataFrame's columns to match the School schema. For example can be run
+    before instantiating the School model. Some of this may be redundant with the School
+    model's pydantic functionality, but seems good to have this to run on a DataFrame.
+
+    1) rename columns based upon "manual fix" column aliases (School_aliases module)
+    2) rename columns based on fuzzy matching
+    3) drop unknown columns
+    4) add missing columns
     """
-    alias_lookup = _unpack_column_aliases()
+    logging.info(f"dataframe has columns: {pformat(df.columns)}")
+
+    schema_column_names = school_schema_column_names()
+    alias_lookup = _unpack_school_column_aliases()
     column_mapping = dict()
-    for src_column_name in df.columns:
-        schema_column_name = alias_lookup.get(src_column_name.lower())
+    columns_to_remove = list()
+    all_choices = list(schema_column_names) + list(alias_lookup.keys())
+    logging.info(f"all fuzzy choices {pformat(all_choices)}")
+
+    # search for column aliases
+    for src_col_name in df.columns:
+        # exact match
+        schema_column_name = alias_lookup.get(src_col_name.lower())
         if schema_column_name is not None:
-            if schema_column_name != src_column_name:
-                logging.warning(
-                    f"renaming {src_column_name} to {schema_column_name} (known alias)"
-                )
-            column_mapping[src_column_name] = schema_column_name
+            # add to column mappings
+            if schema_column_name != src_col_name:
+                column_mapping[src_col_name] = (schema_column_name, "alias exact match")
+        # fuzzy match
+        else:
+            match = process.extractOne(
+                src_col_name, all_choices, score_cutoff=fuzzy_score_cutoff
+            )
+            if match is not None:
+                (hit, score) = match
+                if hit in schema_column_names:
+                    schema_column_name = hit
+                    reason = f"fuzzy match {score}%"
+                else:
+                    schema_column_name = alias_lookup[hit]
+                    reason = f"fuzzy match on alias column: {hit} {score}%"
+                if schema_column_name != src_col_name:
+                    column_mapping[src_col_name] = (schema_column_name, reason)
+
+    # process renames
     if column_mapping:
-        df.rename(columns=column_mapping, inplace=inplace)
+        logging.info(f"renaming columns: {pformat(column_mapping)}")
+        df_col_mapping = {
+            k: v for k, (v, _) in column_mapping.items()
+        }  # _ was the reason (exact match or % match)
+        df.rename(columns=df_col_mapping, inplace=inplace)
+
+    # process additions
+    columns_to_add = [c for c in schema_column_names if c not in df.columns]
+    if columns_to_add:
+        logging.info(
+            f"adding {len(columns_to_add)} columns from schema: {pformat(columns_to_add)}"
+        )
+        for schema_col in columns_to_add:
+            df[
+                schema_col
+            ] = None  # this is sloppy to assign None. but OK assuming the dataframe is object type.
+
+    # process removals
+    columns_to_remove = [c for c in df.columns if c not in schema_column_names]
+    if columns_to_remove:
+        logging.info(
+            f"removing columns: {pformat(columns_to_remove)} (not in School schema)"
+        )
+        df.drop(columns=columns_to_remove, inplace=inplace)
+
     return df

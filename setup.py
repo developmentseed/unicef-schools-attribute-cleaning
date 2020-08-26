@@ -24,7 +24,7 @@ inst_reqs = [
 # Dev Requirements
 extra_reqs = {
     "test": ["pytest", "pytest-cov"],
-    "dev": ["pytest", "pytest-cov", "pre-commit"],
+    "dev": ["pytest==6.0.1", "pytest-cov== 2.10.1", "pre-commit==2.7.1"],
 }
 
 

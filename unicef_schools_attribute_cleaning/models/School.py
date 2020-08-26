@@ -14,6 +14,7 @@ from pydantic import (
     PositiveFloat,
     PositiveInt,
     confloat,
+    conint,
     constr,
     root_validator,
     validator,
@@ -70,7 +71,7 @@ class School(BaseModel):
         confloat(ge=0, le=5000)
     ]  # number[ms]  5000 ms is ~5 seconds
     availability_connectivity: Optional[Percentage]  # number [%]
-    num_computers: Optional[PositiveInt]  # of computers/tablets
+    num_computers: Optional[conint(ge=0)]  # of computers/tablets
     type_school: Optional[
         SchoolType
     ]  # type of school(private, government, religious???
@@ -111,7 +112,7 @@ class School(BaseModel):
             return Connectivity[raw_val]
         except (KeyError, AttributeError):
             return None
-        return raw_val
+        return None
 
     @validator("educ_level", pre=True)
     def check_educ_level(cls, raw_val):
@@ -126,7 +127,7 @@ class School(BaseModel):
             return EducationLevel[raw_val]
         except (KeyError, AttributeError):
             return None
-        return raw_val
+        return None
 
     @validator("country_code", pre=True)
     def check_country_code(cls, val):

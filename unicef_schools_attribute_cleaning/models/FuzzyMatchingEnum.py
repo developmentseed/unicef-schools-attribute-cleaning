@@ -12,6 +12,10 @@ class FuzzyMatchingEnum(Enum):
     aenum Enum subclass implementing fuzzy matching in the _missing_name_ hook.
     """
 
+    def __str__(self):
+        """Override the str() other it will print ClassName.attr instead of value."""
+        return str(self.value)
+
     @classmethod
     def _missing_name_(cls, name):
         if name is None:
@@ -23,7 +27,7 @@ class FuzzyMatchingEnum(Enum):
         )  # TODO don't hardcode score_cutoff
         if result is not None:
             (choice, score) = result
-            logging.info(f"matched {name} to {choice} ({score} score)")
+            # logging.info(f"matched {name} to {choice} ({score} score)")
             return cls[choice]
         logging.warning(f"no fuzzy match for '{name}', choices = {choices}")
         raise AttributeError(f"unknown Connectivity: {name}")

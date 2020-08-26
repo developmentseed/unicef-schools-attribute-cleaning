@@ -1,11 +1,13 @@
 """
 Enumerated type for education level.
 """
-from pydantic import BaseModel
+from .FuzzyMatchingEnum import FuzzyMatchingEnum
 
 
-class EducationLevel(BaseModel):
-    """Enum"""
+class EducationLevel(FuzzyMatchingEnum):
+    """
+    EducationLevel enumerated type with fuzzy matching.
+    """
 
     primary = "Primary"
     secondary = "Secondary"

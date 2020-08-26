@@ -1,13 +1,10 @@
 """
-Internet Connectivity enumerated type with fuzzy matching.
+Internet Connectivity Enum
 """
-import logging
-
-from aenum import Enum
-from fuzzywuzzy import process
+from .FuzzyMatchingEnum import FuzzyMatchingEnum
 
 
-class Connectivity(Enum):
+class Connectivity(FuzzyMatchingEnum):
     """
     Internet Connectivity enumerated type with fuzzy matching.
     """
@@ -31,44 +28,3 @@ class Connectivity(Enum):
     dialup = "Dial Up"
     dongle = "Dongle"
     broadband = "Broadband"
-
-    @classmethod
-    def _missing_name_(cls, name):
-        if name is None:
-            raise AttributeError("attribute cannot be None")
-        query = name
-        choices = [name for name, member in cls.__members__.items()]
-        result = process.extractOne(query, choices, score_cutoff=80)
-        if result is not None:
-            (choice, score) = result
-            # logging.warning(f'matched {name} to {choice} ({score} score)')
-            return cls[choice]
-        logging.warning(f"no fuzzy match for {name}, choices = {choices}")
-        raise AttributeError(f"unknown Connectivity: {name}")
-
-
-# Connectivity = Enum('Connectivity', [
-#     ('4g', '4G'),
-#     ('4G', '4G'),
-#     ('LTE', 'LTE')
-# ], type=BaseConnectivity)
-
-
-#
-# class Connectivity(str, Enum):
-#     """Internet Connectivity"""
-#     'x2g' = '2g'
-#     '3g' = auto()
-#     '4g' = auto()
-#     lte = '4g'
-#     '5g' = auto()
-#     '6g' = auto()
-#     fiber = auto()
-#     cable = auto()
-#     dsl = "DSL"
-#     adsl = "DSL"
-#     shdsl = "DSL"
-#     xdsl = "DSL"
-#     satellite = "Satellite"
-#     radio = "Radio"
-#

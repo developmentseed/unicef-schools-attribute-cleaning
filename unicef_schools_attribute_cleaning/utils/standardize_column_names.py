@@ -94,15 +94,15 @@ def standardize_column_names(
         df.rename(columns=df_col_mapping, inplace=inplace)
 
     # process additions
-    columns_to_add = [c for c in schema_column_names if c not in df.columns]
-    if columns_to_add:
-        logging.info(
-            f"adding {len(columns_to_add)} columns from schema: {pformat(columns_to_add)}"
-        )
-        for schema_col in columns_to_add:
-            df[
-                schema_col
-            ] = None  # this is sloppy to assign None. but OK assuming the dataframe is object type.
+    # columns_to_add = [c for c in schema_column_names if c not in df.columns]
+    # if columns_to_add:
+    #     logging.info(
+    #         f"adding {len(columns_to_add)} columns from schema: {pformat(columns_to_add)}"
+    #     )
+    #     for schema_col in columns_to_add:
+    #         df[
+    #             schema_col
+    #         ] = None  # this is sloppy to assign None. but OK assuming the dataframe is object type.
 
     # process removals
     columns_to_remove = [c for c in df.columns if c not in schema_column_names]

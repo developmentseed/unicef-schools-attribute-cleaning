@@ -20,6 +20,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install tox codecov pre-commit
+          pip check
       
       # Run tox using the version of Python in `PATH`
       - name: Run Tox

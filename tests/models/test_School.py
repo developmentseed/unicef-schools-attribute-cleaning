@@ -81,7 +81,7 @@ def test_required_fields():
 
 def test_enumerated_field():
     src = src_fields.copy()
-    src["type_connectivity"] = "2G"  # clear a required field
+    src["type_connectivity"] = "2G"  # set enumerated value field to something legit
     School.parse_obj(src)
 
 

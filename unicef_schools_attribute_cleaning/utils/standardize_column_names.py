@@ -13,14 +13,13 @@ from unicef_schools_attribute_cleaning.models.School_aliases import School_alias
 
 
 @lru_cache(maxsize=None)
-def _unpack_lookup_aliases() -> dict:
+def _unpack_column_aliases() -> dict:
     """
     Unpack the known aliases for lookup table of alias_column_name -> schema_column_name.
     :return: lookup table.
     :rtype: dict
     :raises: ValueError if an alias has more than one mapping to a schema column
     """
-    logging.warning("_unpack_lookup_aliases!")
 
     # initialize the lookup table with the canonical column names, always map to same name.
     schema_column_names = School.schema()["properties"].keys()
@@ -45,7 +44,7 @@ def standardize_column_names(df: DataFrame, inplace=True) -> DataFrame:
     :return: df with standardized column names
     :rtype: DataFrame
     """
-    alias_lookup = _unpack_lookup_aliases()
+    alias_lookup = _unpack_column_aliases()
     column_mapping = dict()
     for src_column_name in df.columns:
         schema_column_name = alias_lookup.get(src_column_name.lower())

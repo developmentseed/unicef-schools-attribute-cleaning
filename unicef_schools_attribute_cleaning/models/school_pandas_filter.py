@@ -22,6 +22,8 @@ def school_pandas_filter(row: Series) -> Optional[Series]:
     try:
         s = School.parse_obj(row.to_dict())
         data = s.dict()
+        # TODO: data types are being lost after Series(), e.g. num_students is no longer an integer it's a float.
+        # TODO: column ordering is lost in dict conversion
         return Series(data=data)
     except ValidationError as err:
         logging.warning(err)

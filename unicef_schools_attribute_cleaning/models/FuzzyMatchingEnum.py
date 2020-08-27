@@ -6,6 +6,8 @@ import logging
 from aenum import Enum
 from fuzzywuzzy import process
 
+logger = logging.getLogger(__name__)
+
 
 class FuzzyMatchingEnum(Enum):
     """
@@ -13,7 +15,7 @@ class FuzzyMatchingEnum(Enum):
     """
 
     def __str__(self):
-        """Override the str() other it will print ClassName.attr instead of value."""
+        """Override the str() other it will print ClassName.{attribute_name} instead of value."""
         return str(self.value)
 
     @classmethod
@@ -27,7 +29,7 @@ class FuzzyMatchingEnum(Enum):
         )  # TODO don't hardcode score_cutoff
         if result is not None:
             (choice, score) = result
-            # logging.info(f"matched {name} to {choice} ({score} score)")
+            # logger.info(f"matched {name} to {choice} ({score} score)")
             return cls[choice]
-        logging.warning(f"no fuzzy match for '{name}', choices = {choices}")
+        logger.warning(f"{cls} has no fuzzy match for '{name}', choices = {choices}")
         raise AttributeError(f"unknown Connectivity: {name}")

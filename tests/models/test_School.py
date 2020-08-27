@@ -128,10 +128,12 @@ def test_speed_connectivity():
     fields["speed_connectivity"] = 10000000
     School.parse_obj(fields)
 
-    fields["speed_connectivity"] = -100
-    with pytest.raises(ValidationError):
-        School.parse_obj(fields)
+    # 0 is coerced to None
+    fields["speed_connectivity"] = 0.0
+    school = School.parse_obj(fields)
+    assert school.speed_connectivity is None
 
+    # out of range is invalid
     fields["speed_connectivity"] = 99900000
     with pytest.raises(ValidationError):
         School.parse_obj(fields)

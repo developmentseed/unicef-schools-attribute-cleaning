@@ -43,6 +43,10 @@ def dataframe_cleaner(
 
     # apply the Schools pydantic model in pandas filter
     df = df.apply(func=dataframe_filter, axis=1)
+    if not isinstance(df, DataFrame):
+        raise RuntimeError(
+            "No records passed School validation model, cannot continue, stopping cleaner."
+        )
 
     # filter out the None values from previous step
     df = df[df["uuid"].notnull()]
@@ -50,9 +54,7 @@ def dataframe_cleaner(
     # fix up the data types in pandas
     df = df.convert_dtypes()
 
-    logger.info(
-        f"dataframe cleaning: {len(dataframe)} source rows -> {len(df)} cleaned rows"
-    )
+    logger.info(f"{len(dataframe)} source rows -> {len(df)} cleaned rows")
     return df
 
 
@@ -72,5 +74,5 @@ def dataframe_filter(row: Series) -> Optional[Series]:
         data = s.dict()
         return Series(data=data, dtype=object)
     except ValidationError as err:
-        logging.warning(err)
+        logger.warning(err)
     return None

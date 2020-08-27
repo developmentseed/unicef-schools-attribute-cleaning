@@ -5,6 +5,7 @@ import logging
 
 from aenum import Enum
 from fuzzywuzzy import process
+from fuzzywuzzy.fuzz import token_set_ratio as scorer
 
 logger = logging.getLogger(__name__)
 
@@ -25,11 +26,12 @@ class FuzzyMatchingEnum(Enum):
         query = name
         choices = [name for name, member in cls.__members__.items()]
         result = process.extractOne(
-            query, choices, score_cutoff=80
+            query, choices, score_cutoff=40, scorer=scorer
         )  # TODO don't hardcode score_cutoff
         if result is not None:
             (choice, score) = result
-            # logger.info(f"matched {name} to {choice} ({score} score)")
+            # if score < 100:
+            #     logger.info(f"matched {name} to {choice} ({score} score)")
             return cls[choice]
         logger.warning(f"{cls} has no fuzzy match for '{name}', choices = {choices}")
         raise AttributeError(f"unknown Connectivity: {name}")

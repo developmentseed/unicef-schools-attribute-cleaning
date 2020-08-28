@@ -18,13 +18,20 @@ logger = logging.getLogger(__name__)
 
 def dataframe_cleaner(
     dataframe: DataFrame,
-    country_code: CountryCodeAlpha2 = "US",
+    country_code: CountryCodeAlpha2 = "US",  # TODO use country object
     is_private: bool = True,
     provider: str = "devseed",
     provider_is_private: bool = True,
 ) -> DataFrame:
     """
     Return cleaned and validated DataFrame via the School pydantic model.
+    :param pandas dataframe:
+    :param country_code:
+    :param is_private:
+    :param provider:
+    :param provider_is_private:
+    :return: pandas dataframe
+    :raises: RuntimeError if no records pass validation
     """
     df = DataFrame(data=dataframe, copy=True)  # do not modify the source dataframe
 
@@ -65,9 +72,7 @@ def dataframe_filter(row: Series) -> Optional[Series]:
     restoring correct dtypes in Pandas.
 
     :param row: pandas series of one school row
-    :type row: Series
     :return: validated School record
-    :rtype:  Optional[Series]
     """
     try:
         s = School.parse_obj(row.to_dict())

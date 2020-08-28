@@ -55,10 +55,12 @@ class GADMLoaderService:
     @lru_cache(maxsize=128)
     def unzip(cls, zip_file: BytesIO) -> BytesIO:
         """
-        Unzip and read a file e.g. gadm36_MCO_gpkg.zip
+        Unzip and return an in-memory file e.g. gadm36_MCO_gpkg.zip.
+        Te archive is expected to contain 2 files: license.txt and gadm36_{country_code_alpha3}.gpkg.
+        :param zip_file:
+        :return: unzipped geopackage file
         """
         zip: ZipFile = ZipFile(zip_file)
-        # the archive is expected to contain 2 files: license.txt and gadm36_{country_code_alpha3}.gpkg
         filenames = zip.namelist()
         assert (
             len(filenames) == 2
@@ -70,7 +72,9 @@ class GADMLoaderService:
 
     def fetch(self, country: Country) -> BytesIO:
         """
-        Fetch and unzip the GADM file, backed my disk cache.
+        Fetch and unzip the GADM file, backed by disk cache.
+        :param country: iso3166 country
+        :return: geopackage file
         """
         country_code_alpha3 = country.alpha3
         url = self.url_format.format(country_code_alpha3=country_code_alpha3)
@@ -91,6 +95,5 @@ class GADMLoaderContainer(containers.DeclarativeContainer):
     """
 
     config = providers.Configuration()
-
     disk_cache = providers.Singleton(DiskCacheProvider, disk_cache=config.disk_cache)
     service = providers.Factory(GADMLoaderService, disk_cache=disk_cache)

@@ -20,7 +20,14 @@ class FuzzyMatchingEnum(Enum):
         return str(self.value)
 
     @classmethod
-    def _missing_name_(cls, name):
+    def _missing_name_(cls, name: str):
+        """
+        Fuzzy matches the attribute names, returning closest one.
+
+        :param name: attribute name
+        :return: attribute from FuzzyMatchingEnum
+        :raises: AttributeError
+        """
         if name is None:
             raise AttributeError("attribute cannot be None")
         query = name

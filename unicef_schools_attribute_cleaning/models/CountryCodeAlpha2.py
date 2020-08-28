@@ -17,6 +17,9 @@ def country_code_validator(code: CountryCodeAlpha2):
     """
     Pre-process and validate country codes. ISO 3166-1 defines two-letter, three-letter, and three-digit country
     codes.
+    :param code: ISO3166 2 character Country Code
+    :return: ISO3166 2 character Country Code
+    :raises: ValueError
     """
     try:
         c = countries.get(code)

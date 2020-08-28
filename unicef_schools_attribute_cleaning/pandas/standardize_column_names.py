@@ -19,7 +19,10 @@ uuid_column = "uuid"
 
 
 def add_uuid(dataframe: DataFrame):
-    """Modify in place DataFrame with uuid column added (if not already having uuid column)"""
+    """
+    Modify in place DataFrame with uuid column added (if not already having uuid column.
+    :param dataframe: pandas dataframe (inplace)
+    """
     if "uuid" not in dataframe.columns:
         logger.info("uuid column not found, generating uuid4")
         dataframe["uuid"] = dataframe.apply(lambda row: str(uuid4()), axis=1)
@@ -27,7 +30,10 @@ def add_uuid(dataframe: DataFrame):
 
 @lru_cache(maxsize=128)
 def school_schema_column_names() -> List[str]:
-    """Fetch list of column names from the School model."""
+    """
+    Fetch list of column names from the School model.
+    :return: list of column names
+    """
     return School.schema()["properties"].keys()
 
 
@@ -36,7 +42,6 @@ def _unpack_school_column_aliases() -> Dict[str, List[str]]:
     """
     Unpack the known aliases for lookup table of alias_column_name -> schema_column_name.
     :return: lookup table.
-    :rtype: dict
     :raises: ValueError if an alias has more than one mapping to a schema column
     """
     result = dict()
@@ -52,18 +57,17 @@ def _unpack_school_column_aliases() -> Dict[str, List[str]]:
 
 
 def standardize_column_names(
-    dataframe: DataFrame, inplace=True, fuzzy=True, fuzzy_score_cutoff=90
+    dataframe: DataFrame, inplace=True, fuzzy_score_cutoff=90
 ) -> DataFrame:
     """
     Modify DataFrame's columns to match the School schema. For example can be run
     before instantiating the School model for each DataFrame row.
-
-    - rename columns based upon "manual fix" column aliases (School_aliases module)
-    - rename columns based on fuzzy matching
-    - drop unknown columns
-    - add missing columns
+    :param dataframe: input pandas datafame to modify
+    :param inplace: modify in place
+    :param fuzzy_score_cutoff: minimum score for fuzzy matching
+    :return: new dataframe or modified dataframe
     """
-    # logger.info(f"dataframe has columns: {pformat(df.columns)}")
+    # TODO: fix inplace below
     df = dataframe
     add_uuid(df)
     schema_column_names = school_schema_column_names()

@@ -8,7 +8,6 @@ Example of Dependency Injection:
 with TemporaryDirectory() as tmp_dir:
     with dc.Cache(str(tmp_dir)) as disk_cache:
         container = GADMLoaderContainer()
-        c = container.config
         container.config.set("disk_cache", disk_cache)
         service: GADMLoaderService = container.service()
         stream: BytesIO = service.fetch(country=countries.get("MCO"))
@@ -18,7 +17,6 @@ with TemporaryDirectory() as tmp_dir:
 ```
 """
 import logging
-from datetime import timedelta
 from functools import lru_cache
 from io import BytesIO
 from zipfile import ZipFile
@@ -83,7 +81,7 @@ class GADMLoaderService:
         logger.info(f"cache miss: fetching {url}")
         response = get(url=url)
         in_memory_file = BytesIO(response.content)
-        self.disk_cache.set(url, in_memory_file, expire=timedelta(days=365).seconds)
+        self.disk_cache.set(url, in_memory_file)
         return self.unzip(in_memory_file)
 
 

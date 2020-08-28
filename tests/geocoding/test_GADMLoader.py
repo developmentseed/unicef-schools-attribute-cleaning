@@ -16,7 +16,9 @@ from unicef_schools_attribute_cleaning.geocoding.GADMLoader import (
 )
 
 logger = logging.getLogger(__name__)
-__tmp_dir: Path = Path(getcwd())
+__tmp_dir: Path = Path(getcwd()).joinpath("tests").joinpath("cache")
+
+logger.info(__tmp_dir)
 __disk_cache: Optional[dc.Cache] = None
 
 url = "https://biogeo.ucdavis.edu/data/gadm3.6/gpkg/gadm36_MCO_gpkg.zip"
@@ -47,8 +49,8 @@ def test_gadm_loader_with_cache_hit():
         container = GADMLoaderContainer()
         container.config.set("disk_cache", __disk_cache)
         service: GADMLoaderService = container.service()
-        stream: BytesIO = service.fetch(country=countries.get("MCO"))
-        data = stream.read()
+        file: BytesIO = service.fetch(country=countries.get("MCO"))
+        data = file.read()
         size = len(data)
         assert size == 118784
 
@@ -65,7 +67,7 @@ def test_gadm_loader_no_cache():
     container = GADMLoaderContainer()
     container.config.set("disk_cache", __disk_cache)
     service: GADMLoaderService = container.service()
-    stream: BytesIO = service.fetch(country=countries.get("MCO"))
-    data = stream.read()
+    file: BytesIO = service.fetch(country=countries.get("MCO"))
+    data = file.read()
     size = len(data)
     assert size == 118784

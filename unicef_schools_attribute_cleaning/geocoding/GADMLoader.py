@@ -1,18 +1,31 @@
 """
 Fetch country file from gadm.org
 https://gadm.org/metadata.html
+
+Example of Dependency Injection:
+
+```python
+with TemporaryDirectory() as tmp_dir:
+    with dc.Cache(str(tmp_dir)) as disk_cache:
+        container = GADMLoaderContainer()
+        c = container.config
+        container.config.set("disk_cache", disk_cache)
+        service: GADMLoaderService = container.service()
+        stream: BytesIO = service.fetch(country=countries.get("MCO"))
+        data = stream.read()
+        size = len(data)
+        assert size == 118784
+```
 """
 import logging
 from datetime import timedelta
 from functools import lru_cache
 from io import BytesIO
-from tempfile import TemporaryDirectory
 from zipfile import ZipFile
 
-import diskcache as dc
 from dependency_injector import containers, providers
 from diskcache import Cache
-from iso3166 import Country, countries
+from iso3166 import Country
 from requests import get
 
 logger = logging.getLogger(__name__)
@@ -83,17 +96,3 @@ class GADMLoaderContainer(containers.DeclarativeContainer):
 
     disk_cache = providers.Singleton(DiskCacheProvider, disk_cache=config.disk_cache)
     service = providers.Factory(GADMLoaderService, disk_cache=disk_cache)
-
-
-if __name__ == "__main__":
-    """example usage of dependency injection"""
-    with TemporaryDirectory() as tmp_dir:
-        with dc.Cache(str(tmp_dir)) as disk_cache:
-            container = GADMLoaderContainer()
-            c = container.config
-            container.config.set("disk_cache", disk_cache)
-            service: GADMLoaderService = container.service()
-            stream: BytesIO = service.fetch(country=countries.get("MCO"))
-            data = stream.read()
-            size = len(data)
-            assert size == 118784

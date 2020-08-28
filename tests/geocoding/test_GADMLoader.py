@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Optional
 
 import diskcache as dc
+import responses
 from iso3166 import countries
 from pytest import fixture
 
@@ -28,21 +29,39 @@ def setup_fixtures():
     logger.info("setup test fixtures")
     with dc.Cache(directory=str(__tmp_dir), disk_pickle_protocol=4) as disk_cache:
         __disk_cache = disk_cache
-        path = dirname(__file__)
-        with open(file=f"{path}/fixtures/gadm36_MCO_gpkg.zip", mode="rb") as zip_file:
-            data = BytesIO(initial_bytes=zip_file.read())
-            __disk_cache.set(url, data)
-            assert __disk_cache.get(url)
         yield
-        __disk_cache.delete(key=url)
-        logger.info("setup test fixtures")
-        pass
+        logger.info("teardown test fixtures")
+        __disk_cache.clear()
 
 
-def test_gadm_loader():
+@responses.activate
+def test_gadm_loader_with_cache_hit():
     global __disk_cache
     assert __disk_cache is not None
-    assert __disk_cache.get(key=url) is not None
+    path = dirname(__file__)
+    with open(file=f"{path}/fixtures/gadm36_MCO_gpkg.zip", mode="rb") as zip_file:
+        data = BytesIO(initial_bytes=zip_file.read())
+        __disk_cache.set(url, data)
+        assert __disk_cache.get(url)
+
+        container = GADMLoaderContainer()
+        container.config.set("disk_cache", __disk_cache)
+        service: GADMLoaderService = container.service()
+        stream: BytesIO = service.fetch(country=countries.get("MCO"))
+        data = stream.read()
+        size = len(data)
+        assert size == 118784
+
+
+@responses.activate
+def test_gadm_loader_no_cache():
+    global __disk_cache
+    assert __disk_cache is not None
+    __disk_cache.clear()
+    path = dirname(__file__)
+    with open(file=f"{path}/fixtures/gadm36_MCO_gpkg.zip", mode="rb") as zip_file:
+        data = zip_file.read()
+        responses.add(responses.GET, url, body=data)
     container = GADMLoaderContainer()
     container.config.set("disk_cache", __disk_cache)
     service: GADMLoaderService = container.service()

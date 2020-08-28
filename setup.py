@@ -19,6 +19,7 @@ inst_reqs = [
     "pydantic[email]",
     "pydantic~=1.6.1",
     "python-Levenshtein~=0.12.0",
+    "responses~=0.11.0",
     "requests~=2.24.0",
     "fuzzywuzzy==0.18.0",
     "xlrd~=1.2.0",

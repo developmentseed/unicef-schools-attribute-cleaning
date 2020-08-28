@@ -25,13 +25,13 @@ def add_uuid(dataframe: DataFrame):
         dataframe["uuid"] = dataframe.apply(lambda row: str(uuid4()), axis=1)
 
 
-@lru_cache()
+@lru_cache(maxsize=128)
 def school_schema_column_names() -> List[str]:
     """Fetch list of column names from the School model."""
     return School.schema()["properties"].keys()
 
 
-@lru_cache()
+@lru_cache(maxsize=128)
 def _unpack_school_column_aliases() -> Dict[str, List[str]]:
     """
     Unpack the known aliases for lookup table of alias_column_name -> schema_column_name.

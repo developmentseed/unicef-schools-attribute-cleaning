@@ -13,6 +13,7 @@ chardet==3.0.4
 click==7.1.2
 click-plugins==1.1.1
 cligj==0.5.0
+coloredlogs==14.0
 colorlog==4.2.1
 coverage==5.2.1
 decorator==4.4.2
@@ -29,6 +30,7 @@ filelock==3.0.12
 Fiona==1.8.13.post1
 fuzzywuzzy==0.18.0
 geopandas==0.8.1
+humanfriendly==8.2
 identify==1.4.28
 idna==2.10
 iniconfig==1.0.1
@@ -100,7 +102,7 @@ tornado==6.0.4
 tox==3.19.0
 traitlets==4.3.3
 typed-ast==1.4.1
--e git+https://github.com/developmentseed/unicef-schools-attribute-cleaning.git@54c31b3070d9be1db40da70805849b6347757ea1#egg=unicef_schools_attribute_cleaning
+-e git+https://github.com/developmentseed/unicef-schools-attribute-cleaning.git@0123e750944162bc84e60d7a36ba858d2b9a04f3#egg=unicef_schools_attribute_cleaning
 urllib3==1.25.10
 virtualenv==20.0.31
 wcwidth==0.2.5

@@ -13,6 +13,7 @@ inst_reqs = [
     "defusedxml~=0.6.0",
     "dependency-injector~=3.33.0",
     "diskcache~=5.0.2",
+    "geopandas~=0.8.1",
     "iso3166~=1.0.1",
     "openpyxl~=3.0.5",
     "pandas~=1.1.1",

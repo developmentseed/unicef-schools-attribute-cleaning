@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Optional
 
 import diskcache as dc
+import geopandas as gp
 import responses
 from iso3166 import countries
 from pytest import fixture
@@ -26,7 +27,7 @@ url = "https://biogeo.ucdavis.edu/data/gadm3.6/gpkg/gadm36_MCO_gpkg.zip"
 
 @fixture(autouse=True, scope="session")
 def setup_fixtures():
-    global __tmp_dir  # TODO maybe possible to use a parameterized fixture instead of global vars?
+    global __tmp_dir  # TODO maybe possible to use a parameterized pytest fixture instead of global vars?
     global __disk_cache
     logger.info("setup test fixtures")
     with dc.Cache(directory=str(__tmp_dir), disk_pickle_protocol=4) as disk_cache:
@@ -45,11 +46,10 @@ def test_gadm_loader_with_cache_hit():
         data = BytesIO(initial_bytes=zip_file.read())
         __disk_cache.set(url, data)
         assert __disk_cache.get(url)
-
         container = GADMLoaderContainer()
         container.config.set("disk_cache", __disk_cache)
         service: GADMLoaderService = container.service()
-        file: BytesIO = service.fetch(country=countries.get("MCO"))
+        file: BytesIO = service.fetch_gadm_file(country=countries.get("MCO"))
         data = file.read()
         size = len(data)
         assert size == 118784
@@ -67,7 +67,16 @@ def test_gadm_loader_no_cache():
     container = GADMLoaderContainer()
     container.config.set("disk_cache", __disk_cache)
     service: GADMLoaderService = container.service()
-    file: BytesIO = service.fetch(country=countries.get("MCO"))
+    file: BytesIO = service.fetch_gadm_file(country=countries.get("MCO"))
     data = file.read()
     size = len(data)
     assert size == 118784
+
+
+def test_geodataframe_converter():
+    container = GADMLoaderContainer()
+    container.config.set("disk_cache", __disk_cache)
+    service: GADMLoaderService = container.service()
+    file: BytesIO = service.fetch_gadm_file(country=countries.get("MCO"))
+    geodf: gp.GeoDataFrame = service.gadm_to_geodataframe(file)
+    assert not geodf.empty

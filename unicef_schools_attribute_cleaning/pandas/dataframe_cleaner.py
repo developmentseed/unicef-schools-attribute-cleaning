@@ -146,7 +146,6 @@ def _fix_gadm_data(dataframe: DataFrame, country: Country):
                 lambda geom: buffer.intersects(geom)
             )
             df_match = geo_df[intersects_buffer]
-        #  assert len(df_match) <= 1, f'expected point to match <= 1 gadm areas, got {len(df_match)} matches'
         if len(df_match):
             return df_match.squeeze()
         else:

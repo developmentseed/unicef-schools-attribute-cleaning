@@ -133,4 +133,5 @@ data/
 
 # disk cache from GADMLoaderService
 cache/
+cache.db
 

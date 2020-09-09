@@ -7,10 +7,11 @@ from typing import Optional
 
 import pandas as pd
 from diskcache import Cache
+from geopy.distance import distance as geodesic_distance
 from iso3166 import Country
 from pandas import DataFrame, Series
 from pydantic import ValidationError
-from shapely.geometry import Point
+from shapely.geometry import Point, Polygon
 
 from unicef_schools_attribute_cleaning.geocoding.GADMLoader import (
     GADMLoaderContainer,
@@ -21,6 +22,8 @@ from unicef_schools_attribute_cleaning.models.School import Latitude, Longitude,
 from .standardize_column_names import standardize_column_names
 
 logger = logging.getLogger(__name__)
+
+BUFFER_KM = 5.0
 
 
 def dataframe_cleaner(
@@ -91,6 +94,23 @@ def dataframe_cleaner(
     return df
 
 
+def _buffer_for_latitude(point: Point) -> (float, Polygon):
+    """
+    Produce approximately circular polygon of BUFFER_KM distance. Uses geopy's distance()
+    function with WGS-84 ellipsoid to convert to decimal degrees for the given latitude.
+    :param point: point in decimal degrees
+    :return: polygon buffer of BUFFER_KM radius, in decimal degrees.
+    """
+    lat1: Latitude = point.y
+    lat2: Latitude = point.y  # measure at same latitude
+    lon1: Longitude = point.x
+    lon2: Longitude = point.x - 1 if point.x > 1 else point.x + 1  # +/- 1 degree longitude
+    one_degree_lon_km = geodesic_distance((lat1, lon1), (lat2, lon2)).kilometers
+    buffer_degrees = BUFFER_KM / one_degree_lon_km
+    polygon: Polygon = point.buffer(buffer_degrees)
+    return buffer_degrees, polygon
+
+
 def _fix_gadm_data(dataframe: DataFrame, country: Country):
     cache_dir = os.getcwd()
     disk_cache = Cache(
@@ -108,7 +128,26 @@ def _fix_gadm_data(dataframe: DataFrame, country: Country):
         point = Point(lon, lat)
         contains_point = geo_df["geometry"].apply(lambda geom: point.within(geom))
         df_match = geo_df[contains_point]
-        if len(df_match) == 1:
+        assert (
+            len(df_match) <= 1
+        ), f"expected point to match <= 1 gadm areas, got {len(df_match)} matches"
+        if not len(df_match):
+            # try buffering by BUFFER_KM and checking intersection
+            name: str = row["name"]
+            uuid: str = row["uuid"]
+            lat: Latitude = row["lat"]
+            lon: Longitude = row["lon"]
+            link: str = _osm_link(lat=lat, lon=lon)
+            logger.info(
+                f"buffering location by {BUFFER_KM}km for school name={name}, lat,lng={lat},{lon} {link} (uuid={uuid})"
+            )
+            (_, buffer) = _buffer_for_latitude(point)
+            intersects_buffer = geo_df["geometry"].apply(
+                lambda geom: buffer.intersects(geom)
+            )
+            df_match = geo_df[intersects_buffer]
+        #  assert len(df_match) <= 1, f'expected point to match <= 1 gadm areas, got {len(df_match)} matches'
+        if len(df_match):
             return df_match.squeeze()
         else:
             name: str = row["name"]

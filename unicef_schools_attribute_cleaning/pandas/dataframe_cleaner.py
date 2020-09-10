@@ -98,8 +98,8 @@ def _buffer_for_latitude(point: Point) -> (float, Polygon):
     """
     Produce approximately circular polygon of BUFFER_KM distance. Uses geopy's distance()
     function with WGS-84 ellipsoid to convert to decimal degrees for the given latitude.
-    :param point: point in decimal degrees
-    :return: polygon buffer of BUFFER_KM radius, in decimal degrees.
+    :param point: shapely Point in decimal degrees
+    :return: tuple of (buffer_degrees, Polygon): polygon buffer of BUFFER_KM radius, in decimal degrees.
     """
     lat1: Latitude = point.y
     lat2: Latitude = point.y  # measure at same latitude

@@ -37,8 +37,8 @@ class FuzzyMatchingEnum(Enum):
         )  # TODO don't hardcode score_cutoff
         if result is not None:
             (choice, score) = result
-            # if score < 100:
-            #     logger.info(f"matched {name} to {choice} ({score} score)")
+            if score < 100:
+                logger.info(f"matched {name} to {choice} ({score} score)")
             return cls[choice]
         logger.warning(f"{cls} has no fuzzy match for '{name}', choices = {choices}")
         raise AttributeError(f"unknown Connectivity: {name}")

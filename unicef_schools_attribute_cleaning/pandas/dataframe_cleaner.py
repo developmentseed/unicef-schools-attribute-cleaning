@@ -59,23 +59,30 @@ def dataframe_cleaner(
     df = standardize_column_names(df)
 
     logger.info("filtering rows missing lat,lon...")
-
     # shortcut/speedup: coercing lat, lon to numeric (the School validator will also filter these out)
+    before = len(df)
     df = df[pd.to_numeric(df["lat"], errors="coerce").notnull()]
     df = df[pd.to_numeric(df["lon"], errors="coerce").notnull()]
+    after = len(df)
+    logger.info(
+        f"filtering rows missing lat,lon -> {before} rows, after filter: {after} rows"
+    )
 
     # apply the Schools pydantic model in pandas filter
-    logger.info("validating each school row to the schema...")
-
+    logger.info("filter & validate each school row to the schema...")
+    before = len(df)
     df = df.apply(func=_dataframe_filter, axis=1)
     if not isinstance(df, DataFrame):
         # if nothing passes the filter, pandas says the dataframe is instead a Series.
         raise RuntimeError(
             "No records passed School validation model, cannot continue, stopping cleaner."
         )
-
     # filter out the None values from previous steps: rows not passing School filter(s)
     df = df[df["uuid"].notnull()]
+    after = len(df)
+    logger.info(
+        f"filter & validate each school row to the schema -> before: {before} rows, after filter: {after} rows"
+    )
 
     # fill in administrative areas
     logger.info("lookup GADM areas by lat,lon...")
@@ -90,7 +97,6 @@ def dataframe_cleaner(
     logger.info("readying pandas data types...")
     df = df.convert_dtypes()
 
-    logger.info(f"{len(dataframe)} source rows -> {len(df)} cleaned rows")
     return df
 
 

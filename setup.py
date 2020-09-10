@@ -14,6 +14,7 @@ inst_reqs = [
     "dependency-injector~=3.33.0",
     "diskcache~=5.0.2",
     "geopandas~=0.8.1",
+    "geopy~=2.0.0",
     "iso3166~=1.0.1",
     "openpyxl~=3.0.5",
     "pandas~=1.1.1",

@@ -65,7 +65,7 @@ def dataframe_cleaner(
     df = df[pd.to_numeric(df["lon"], errors="coerce").notnull()]
     after = len(df)
     logger.info(
-        f"filtering rows missing lat,lon -> {before} rows, after filter: {after} rows"
+        f"filtering rows missing lat,lon -> before: {before} rows, after filter: {after} rows"
     )
 
     # apply the Schools pydantic model in pandas filter
@@ -87,11 +87,6 @@ def dataframe_cleaner(
     # fill in administrative areas
     logger.info("lookup GADM areas by lat,lon...")
     _fix_gadm_data(dataframe=df, country=country)
-
-    # filter out the None values from previous step: rows not passing GADM lookup
-    # this is disabled because a warning is printed instead. the GADM boundaries may not be detailed enough to discern
-    # some border areas, e.g. Zimbabwe vs. Mozambique
-    # df = df[df["uuid"].notnull()]
 
     # fix up the data types in pandas, otherwise many columns will be object types.
     logger.info("readying pandas data types...")
@@ -165,7 +160,7 @@ def _fix_gadm_data(dataframe: DataFrame, country: Country):
             )
             return pd.Series()
 
-    logger.info("processing each lat,lon...")
+    logger.info("processing each lat,lon into GADM area...")
     gadm_lookup_df: DataFrame = dataframe.apply(gadm_lookup, axis=1)
     assert isinstance(gadm_lookup_df, DataFrame)  # pandas will sometimes make a Series
     for level in [0, 1, 2, 3, 4]:

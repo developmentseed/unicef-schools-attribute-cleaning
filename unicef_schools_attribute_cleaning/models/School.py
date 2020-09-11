@@ -156,6 +156,30 @@ class School(BaseModel):
             return None
         return None
 
+    @validator("connectivity", pre=True)
+    def pre_check_connectivity(cls, raw_val):
+        """
+        Before field validation occurs, ....
+        """
+        if not isinstance(raw_val, bool):
+            raise RuntimeError(raw_val)
+        return raw_val
+
+    @validator("tower_type_service", pre=True)
+    def check_tower_type_service(cls, raw_val):
+        """
+        Before field validation occurs, filter down to strings, then index into the TowerTypeService enum.
+        """
+        if not isinstance(raw_val, str):
+            return None
+        if raw_val.lower() in none_words:
+            return None
+        try:
+            return TowerTypeService[raw_val]
+        except (KeyError, AttributeError):
+            return None
+        return None
+
     @validator("speed_connectivity", pre=True)
     def check_speed_connectivity(cls, raw_val):
         """

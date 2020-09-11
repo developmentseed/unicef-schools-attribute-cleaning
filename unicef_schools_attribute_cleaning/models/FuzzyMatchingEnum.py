@@ -7,8 +7,6 @@ from aenum import Enum
 from fuzzywuzzy import process
 from fuzzywuzzy.fuzz import token_set_ratio as scorer
 
-logger = logging.getLogger(__name__)
-
 
 class FuzzyMatchingEnum(Enum):
     """
@@ -28,6 +26,7 @@ class FuzzyMatchingEnum(Enum):
         :return: attribute from FuzzyMatchingEnum
         :raises: AttributeError
         """
+        logger = logging.getLogger(f"{__name__}.{cls.__name__}")
         if name is None:
             raise AttributeError("attribute cannot be None")
         query = name
@@ -37,8 +36,8 @@ class FuzzyMatchingEnum(Enum):
         )  # TODO don't hardcode score_cutoff
         if result is not None:
             (choice, score) = result
-            if score < 100:
-                logger.info(f"matched {name} to {choice} ({score} score)")
+            # if score < 100:
+            #     logger.info(f"matched {name} to {choice} ({score} score)")
             return cls[choice]
         logger.warning(f"{cls} has no fuzzy match for '{name}', choices = {choices}")
         raise AttributeError(f"unknown Connectivity: {name}")

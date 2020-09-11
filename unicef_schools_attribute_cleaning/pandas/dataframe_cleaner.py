@@ -30,7 +30,7 @@ def dataframe_cleaner(
     dataframe: DataFrame,
     country: Country,
     is_private: bool = True,
-    provider: str = "devseed",
+    provider: str = "",
     provider_is_private: bool = True,
 ) -> DataFrame:
     """

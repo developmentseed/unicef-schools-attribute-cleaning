@@ -2,6 +2,7 @@
 Utilities for converting between source column names and School schema column names.
 """
 import logging
+from enum import Enum
 from functools import lru_cache
 from pprint import pformat
 from typing import Dict, List
@@ -16,6 +17,13 @@ from unicef_schools_attribute_cleaning.models.School_aliases import School_alias
 logger = logging.getLogger(__name__)
 
 uuid_column = "uuid"
+
+
+class MatchType(Enum):
+    """Column name Match Type enumerated type."""
+
+    Exact = "Exact"
+    Fuzzy = "Fuzzy"
 
 
 def add_uuid(dataframe: DataFrame):
@@ -72,41 +80,71 @@ def standardize_column_names(
     add_uuid(df)
     schema_column_names = school_schema_column_names()
     alias_lookup = _unpack_school_column_aliases()
-    column_mapping = dict()
+    column_mapping = dict()  # src column name -> (schema_col_name, match_type, reason)
+    schema_cols_mapped = (
+        dict()
+    )  # schema column name -> (src_col_name, match_type, reason)
     columns_to_remove = list()
     all_choices = list(schema_column_names) + list(alias_lookup.keys())
     # logger.info(f"all fuzzy choices {pformat(all_choices)}")
 
-    # search for column aliases
+    # 1st: search for exact matched on column names
     for src_col_name in df.columns:
-        # exact match
+        if src_col_name in schema_column_names:
+            schema_column_name = src_col_name
+            reason = "reason: exact match on column name"
+            match_type = MatchType.Exact
+            column_mapping[src_col_name] = (schema_column_name, match_type, reason)
+            schema_cols_mapped[schema_column_name] = (src_col_name, match_type, reason)
+
+    # 2nd search exact matches on column aliases
+    for src_col_name in df.columns:
+        if src_col_name in column_mapping:
+            continue
         schema_column_name = alias_lookup.get(src_col_name.lower())
-        if schema_column_name is not None:
-            # add to column mappings
-            if schema_column_name != src_col_name:
-                column_mapping[src_col_name] = (schema_column_name, "alias exact match")
-        # fuzzy match
-        else:
-            match = process.extractOne(
-                src_col_name, all_choices, score_cutoff=fuzzy_score_cutoff
-            )
-            if match is not None:
-                (hit, score) = match
-                if hit in schema_column_names:
-                    schema_column_name = hit
-                    reason = f"fuzzy match {score}%"
+        if (
+            schema_column_name is not None
+            and schema_column_name not in schema_cols_mapped
+        ):
+            match_type = MatchType.Exact
+            assert schema_column_name != src_col_name
+            reason = "reason: exact match on column alias"
+            column_mapping[src_col_name] = (schema_column_name, match_type, reason)
+            schema_cols_mapped[schema_column_name] = (src_col_name, match_type, reason)
+
+    # 3nd: search for fuzzy match on column names and column aliases
+    for src_col_name in df.columns:
+        if src_col_name in column_mapping:
+            continue
+        match = process.extractOne(
+            src_col_name, all_choices, score_cutoff=fuzzy_score_cutoff
+        )
+        if match is not None:
+            (hit, score) = match
+            if hit in schema_column_names:
+                schema_column_name = hit
+            else:
+                schema_column_name = alias_lookup[hit]
+            assert schema_column_name in schema_column_names
+            if schema_column_name in schema_cols_mapped:
+                pass
+            else:
+                if hit == schema_column_name:
+                    reason = f"fuzzy match on column name: {hit} {score}%"
                 else:
-                    schema_column_name = alias_lookup[hit]
                     reason = f"fuzzy match on alias column: {hit} {score}%"
-                if schema_column_name != src_col_name:
-                    column_mapping[src_col_name] = (schema_column_name, reason)
+                match_type = MatchType.Fuzzy
+                column_mapping[src_col_name] = (schema_column_name, match_type, reason)
+                schema_cols_mapped[schema_column_name] = (
+                    src_col_name,
+                    match_type,
+                    reason,
+                )
 
     # process renames
     if column_mapping:
-        logger.info(f"renaming columns: {pformat(column_mapping)}")
-        df_col_mapping = {
-            k: v for k, (v, _) in column_mapping.items()
-        }  # _ was the reason (exact match or % match)
+        df_col_mapping = {k: v for k, (v, _, _) in column_mapping.items() if k != v}
+        logger.info(f"renaming columns: {pformat(df_col_mapping)}")
         df.rename(columns=df_col_mapping, inplace=inplace)
 
     # process additions

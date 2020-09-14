@@ -34,7 +34,6 @@ School_aliases = dict(
     num_computers=["computers_number", "tot_func_computers"],
     type_school=[],
     educ_level=["school level", "settings in school", "sch_type"],
-    educ_level=["school level", "settings in school"],
     environment=[],
     num_classrooms=[],
     num_sections=[],

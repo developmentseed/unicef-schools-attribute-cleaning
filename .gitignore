@@ -132,6 +132,6 @@ dmypy.json
 data/
 
 # disk cache from GADMLoaderService
-cache/
+_cache/
 cache.db
 

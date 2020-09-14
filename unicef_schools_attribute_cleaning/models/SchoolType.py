@@ -1,11 +1,11 @@
 """
 Enumerated type for categories of schools.
 """
-from pydantic import BaseModel
+from .FuzzyMatchingEnum import FuzzyMatchingEnum
 
 
-class SchoolType(BaseModel):
-    """Enum"""
+class SchoolType(FuzzyMatchingEnum):
+    """SchoolType enumerated type with fuzzy matching."""
 
     private = "Private"
     government = "Government"

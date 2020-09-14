@@ -7,8 +7,6 @@ from aenum import Enum
 from fuzzywuzzy import process
 from fuzzywuzzy.fuzz import token_set_ratio as scorer
 
-logger = logging.getLogger(__name__)
-
 
 class FuzzyMatchingEnum(Enum):
     """
@@ -28,6 +26,7 @@ class FuzzyMatchingEnum(Enum):
         :return: attribute from FuzzyMatchingEnum
         :raises: AttributeError
         """
+        logger = logging.getLogger(f"{__name__}.{cls.__name__}")
         if name is None:
             raise AttributeError("attribute cannot be None")
         query = name

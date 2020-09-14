@@ -31,7 +31,7 @@ def dataframe_cleaner(
     dataframe: DataFrame,
     country: Country,
     is_private: bool = True,
-    provider: str = "devseed",
+    provider: str = "",
     provider_is_private: bool = True,
 ) -> DataFrame:
     """
@@ -60,38 +60,39 @@ def dataframe_cleaner(
     df = standardize_column_names(df)
 
     logger.info("filtering rows missing lat,lon...")
-
     # shortcut/speedup: coercing lat, lon to numeric (the School validator will also filter these out)
+    before = len(df)
     df = df[pd.to_numeric(df["lat"], errors="coerce").notnull()]
     df = df[pd.to_numeric(df["lon"], errors="coerce").notnull()]
+    after = len(df)
+    logger.info(
+        f"filtering rows missing lat,lon -> before: {before} rows, after filter: {after} rows"
+    )
 
     # apply the Schools pydantic model in pandas filter
-    logger.info("validating each school row to the schema...")
-
+    logger.info("filter & validate each school row to the schema...")
+    before = len(df)
     df = df.apply(func=_dataframe_filter, axis=1)
     if not isinstance(df, DataFrame):
         # if nothing passes the filter, pandas says the dataframe is instead a Series.
         raise RuntimeError(
             "No records passed School validation model, cannot continue, stopping cleaner."
         )
-
     # filter out the None values from previous steps: rows not passing School filter(s)
     df = df[df["uuid"].notnull()]
+    after = len(df)
+    logger.info(
+        f"filter & validate each school row to the schema -> before: {before} rows, after filter: {after} rows"
+    )
 
     # fill in administrative areas
     logger.info("lookup GADM areas by lat,lon...")
     _fix_gadm_data(dataframe=df, country=country)
 
-    # filter out the None values from previous step: rows not passing GADM lookup
-    # this is disabled because a warning is printed instead. the GADM boundaries may not be detailed enough to discern
-    # some border areas, e.g. Zimbabwe vs. Mozambique
-    # df = df[df["uuid"].notnull()]
-
     # fix up the data types in pandas, otherwise many columns will be object types.
     logger.info("readying pandas data types...")
     df = df.convert_dtypes()
 
-    logger.info(f"{len(dataframe)} source rows -> {len(df)} cleaned rows")
     return df
 
 
@@ -160,7 +161,7 @@ def _fix_gadm_data(dataframe: DataFrame, country: Country):
             )
             return pd.Series()
 
-    logger.info("processing each lat,lon...")
+    logger.info("processing each lat,lon into GADM area...")
     gadm_lookup_df: DataFrame = dataframe.apply(gadm_lookup, axis=1)
     assert isinstance(gadm_lookup_df, DataFrame)  # pandas will sometimes make a Series
     for level in [0, 1, 2, 3, 4]:

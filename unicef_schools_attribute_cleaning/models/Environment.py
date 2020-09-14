@@ -6,7 +6,7 @@ from .FuzzyMatchingEnum import FuzzyMatchingEnum
 
 class Environment(FuzzyMatchingEnum):
     """
-    Environment enumerated type with fuzzy matching.
+    School Environment enumerated type with fuzzy matching.
     """
 
     urban = "Urban"

@@ -2,11 +2,11 @@
 Enumerated type for cellular service type (seems redundant with the Connectivity type, but unicef db schema
 defines them separately).
 """
-from pydantic import BaseModel
+from .FuzzyMatchingEnum import FuzzyMatchingEnum
 
 
-class TowerTypeService(BaseModel):
-    """Enum"""
+class TowerTypeService(FuzzyMatchingEnum):
+    """Cell Tower Type Service enumerated type with fuzzy matching."""
 
     _2g = "2G"
     _3g = "3G"

@@ -2,8 +2,8 @@
 Pydantic model for Schools, sourced from the schema in Project_Connect_School_Schema_UNICEF_DB.xlsx
 """
 import logging
-from datetime import datetime
-from math import isclose
+from datetime import date
+from math import isclose, isnan
 from typing import Optional
 from uuid import UUID
 
@@ -61,7 +61,7 @@ class School(BaseModel):
         confloat(ge=-411, le=8850)
     ]  # number[m]  min and max are for the world (meters)
     gps_confidence: Optional[Percentage]  # number[%]
-    date: Optional[datetime]  # date when it was created
+    date: Optional[date]  # date when it was created
     num_students: Optional[int]  # of students
     num_teachers: Optional[int]  # of teachers
     connectivity: Optional[bool]  # internet connectivity
@@ -87,7 +87,7 @@ class School(BaseModel):
     provider: str = Field(...)  # provider aka source (Required)
     provider_is_private: bool = Field(...)  # (Required)
     description: Optional[str]
-    last_update: Optional[datetime]
+    last_update: Optional[date]
     tower_dist: Optional[PositiveFloat]  # number[km]
     tower_type_service: Optional[TowerTypeService]  # (2G, 3G, 4G, Wifi)
     tower_type: Optional[str]
@@ -107,6 +107,47 @@ class School(BaseModel):
     _country_code_validator = validator("country_code", allow_reuse=True, pre=True)(
         country_code_validator
     )
+
+    @validator("water", pre=True)
+    def check_water(cls, raw_val):
+        """
+        Before field validation occurs, convert adhoc values into a boolean
+        """
+        if not isinstance(raw_val, str):
+            return False
+        if not raw_val:
+            return False
+        lower = raw_val.lower()
+        if lower in none_words:
+            return False
+        if "no " in lower:
+            return False
+        return True
+
+    @validator("electricity", pre=True)
+    def check_electricity(cls, raw_val):
+        """
+        Before field validation occurs, convert adhoc values into a boolean
+        """
+        if not isinstance(raw_val, str):
+            return False
+        if not raw_val:
+            return False
+        lower = raw_val.lower()
+        if lower in none_words:
+            return False
+        if "no " in lower:
+            return False
+        return True
+
+    @validator("num_computers", pre=True)
+    def check_num_computers(cls, raw_val):
+        """
+        Before field validation occurs, filter out NaN values and convert to Optional[int]
+        """
+        if isnan(raw_val):
+            return None
+        return raw_val
 
     @validator("type_connectivity", pre=True)
     def check_type_connectivity(cls, raw_val):
@@ -140,6 +181,20 @@ class School(BaseModel):
         except (KeyError, AttributeError):
             return None
         return None
+
+    @validator("email", pre=True)
+    def check_email(cls, raw_val):
+        """
+        Before field validation occurs, filter down to strings, remove apparent boolean values, e.g. in Sierra Leone data.
+        """
+        if not isinstance(raw_val, str):
+            return None
+        lower = raw_val.lower()
+        if lower in none_words:
+            return None
+        if lower in ["no", "yes"]:
+            return None
+        return raw_val
 
     @validator("environment", pre=True)
     def check_school_environment(cls, raw_val):

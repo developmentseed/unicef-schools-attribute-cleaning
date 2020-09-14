@@ -92,7 +92,7 @@ def dataframe_cleaner(
     # fix up the data types in pandas, otherwise many columns will be object types.
     logger.info("readying pandas data types...")
     df = df.convert_dtypes()
-
+    logger.info("done")
     return df
 
 

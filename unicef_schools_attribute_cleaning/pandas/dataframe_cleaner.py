@@ -3,6 +3,7 @@ Pandas dataframe support module
 """
 import logging
 import os
+from pathlib import Path
 from typing import Optional
 
 import pandas as pd
@@ -112,9 +113,9 @@ def _buffer_for_latitude(point: Point) -> (float, Polygon):
 
 
 def _fix_gadm_data(dataframe: DataFrame, country: Country):
-    cache_dir = os.getcwd()
+    cache_dir: Path = Path(os.getcwd()).joinpath("_cache")
     disk_cache = Cache(
-        cache_dir
+        directory=str(cache_dir)
     )  # note: not deleting this resource, to allow cache to persist after script finishes.
     container = GADMLoaderContainer()
     container.config.set("disk_cache", disk_cache)

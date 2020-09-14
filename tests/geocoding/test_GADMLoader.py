@@ -17,7 +17,7 @@ from unicef_schools_attribute_cleaning.geocoding.GADMLoader import (
 )
 
 logger = logging.getLogger(__name__)
-__tmp_dir: Path = Path(getcwd()).joinpath("tests").joinpath("cache")
+__tmp_dir: Path = Path(getcwd()).joinpath("tests").joinpath("_cache")
 
 logger.info(__tmp_dir)
 __disk_cache: Optional[dc.Cache] = None
@@ -76,6 +76,7 @@ def test_gadm_loader_no_cache():
 def test_geodataframe_converter():
     container = GADMLoaderContainer()
     container.config.set("disk_cache", __disk_cache)
+    assert __disk_cache.get(url) is not None
     service: GADMLoaderService = container.service()
     file: BytesIO = service.fetch_gadm_file(country=countries.get("MCO"))
     geodf: gp.GeoDataFrame = service.gadm_to_geodataframe(file)

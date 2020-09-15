@@ -145,7 +145,7 @@ class School(BaseModel):
         """
         Before field validation occurs, filter out NaN values and convert to Optional[int]
         """
-        if isnan(raw_val):
+        if isinstance(raw_val, float) and isnan(raw_val):
             return None
         return raw_val
 
@@ -160,6 +160,21 @@ class School(BaseModel):
             return None
         try:
             return Connectivity[raw_val]
+        except (KeyError, AttributeError):
+            return None
+        return None
+
+    @validator("type_school", pre=True)
+    def check_type_school(cls, raw_val):
+        """
+        Before field validation occurs, filter down to strings and than index into the SchoolType enum.
+        """
+        if not isinstance(raw_val, str):
+            return None
+        if raw_val.lower() in none_words:
+            return None
+        try:
+            return SchoolType[raw_val]
         except (KeyError, AttributeError):
             return None
         return None

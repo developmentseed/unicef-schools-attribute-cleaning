@@ -10,3 +10,6 @@ class SchoolType(FuzzyMatchingEnum):
     private = "Private"
     government = "Government"
     religious = "Religious"
+    Коммунальная_собственность = "Government"  # literally: Communal property
+    Собственность_предприятий = "Private"  # literally: Enterprise property
+    Собственность_иностранных_физических_лиц_Частная_собственность = "Private"

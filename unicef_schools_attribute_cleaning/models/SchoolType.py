@@ -8,6 +8,7 @@ class SchoolType(FuzzyMatchingEnum):
     """SchoolType enumerated type with fuzzy matching."""
 
     private = "Private"
+    public = "Government"
     government = "Government"
     religious = "Religious"
     Коммунальная_собственность = "Government"  # literally: Communal property

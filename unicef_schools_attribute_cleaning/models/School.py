@@ -95,6 +95,14 @@ class School(BaseModel):
     tower_latitude: Optional[Latitude]
     tower_longitude: Optional[Longitude]
     is_private: bool = Field(...)  # (Required)
+
+    is_invalid: bool = Field(
+        ...
+    )  # is the record valid according to the schema (Required)
+    is_invalid_reason: Optional[
+        str
+    ]  # if is_invalid = True, what is the reason for failing validation
+
     # TODO: make uuid required in output schema?
     uuid: Optional[
         UUID
@@ -103,6 +111,14 @@ class School(BaseModel):
     #
     # pydantic validators
     #
+
+    @validator("is_invalid", pre=True)
+    def default_to_invalid(cls):
+        """
+        Before field validation occurs, set is_invalid to True. If the record passes the School pydantic class
+        it will be set to valid: is_invalid = False
+        """
+        return True
 
     _country_code_validator = validator("country_code", allow_reuse=True, pre=True)(
         country_code_validator

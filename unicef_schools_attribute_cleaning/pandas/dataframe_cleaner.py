@@ -59,16 +59,6 @@ def dataframe_cleaner(
     # make the dataframe columns match the School schema.
     df = standardize_column_names(df)
 
-    logger.info("filtering rows missing lat,lon...")
-    # shortcut/speedup: coercing lat, lon to numeric (the School validator will also filter these out)
-    before = len(df)
-    df = df[pd.to_numeric(df["lat"], errors="coerce").notnull()]
-    df = df[pd.to_numeric(df["lon"], errors="coerce").notnull()]
-    after = len(df)
-    logger.info(
-        f"filtering rows missing lat,lon -> before: {before} rows, after filter: {after} rows"
-    )
-
     # apply the Schools pydantic model in pandas filter
     logger.info("filter & validate each school row to the schema...")
     before = len(df)
@@ -186,11 +176,16 @@ def _dataframe_filter(row: Series) -> Optional[Series]:
     """
     try:
         s = School.parse_obj(row.to_dict())
+        s.is_invalid = False
+        s.is_invalid_reason = None
         data = s.dict()
         return Series(data=data, dtype=object)
     except ValidationError as err:
         logger.warning(err)
-    return None
+        invalid_row = row.copy()
+        invalid_row["is_invalid"] = True
+        invalid_row["is_invalid_reason"] = str(err)
+        return invalid_row
 
 
 def _osm_link(lat: Latitude, lon: Longitude) -> str:

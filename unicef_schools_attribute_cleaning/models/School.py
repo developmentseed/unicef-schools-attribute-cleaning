@@ -113,10 +113,10 @@ class School(BaseModel):
     #
 
     @validator("is_invalid", pre=True)
-    def default_to_invalid(cls):
+    def default_to_invalid(cls, _raw_val):
         """
         Before field validation occurs, set is_invalid to True. If the record passes the School pydantic class
-        it will be set to valid: is_invalid = False
+        it will be set to valid: is_invalid = False.
         """
         return True
 

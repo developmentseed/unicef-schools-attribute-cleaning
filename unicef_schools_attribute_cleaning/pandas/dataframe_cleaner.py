@@ -11,7 +11,7 @@ from diskcache import Cache
 from geopy.distance import distance as geodesic_distance
 from iso3166 import Country
 from pandas import DataFrame, Series
-from pydantic import ValidationError
+from pydantic import BaseModel, ValidationError
 from shapely.geometry import Point, Polygon
 
 from unicef_schools_attribute_cleaning.geocoding.GADMLoader import (
@@ -79,6 +79,12 @@ def dataframe_cleaner(
     logger.info("lookup GADM areas by lat,lon...")
     _fix_gadm_data(dataframe=df, country=country)
 
+    is_invalid_counts = df["is_invalid"].value_counts()
+    if is_invalid_counts[True] > 0:
+        logger.warning(
+            f"{is_invalid_counts[True]} invalid records found. See column is_invalid_reason for details."
+        )
+
     # fix up the data types in pandas, otherwise many columns will be object types.
     logger.info("readying pandas data types...")
     df = df.convert_dtypes()
@@ -103,6 +109,15 @@ def _buffer_for_latitude(point: Point) -> (float, Polygon):
     return buffer_degrees, polygon
 
 
+class ValidLatLon(BaseModel):
+    """
+    A Pydantic model to validate the lat and lon independently of the rest of the School record.
+    """
+
+    lat: Latitude
+    lon: Longitude
+
+
 def _fix_gadm_data(dataframe: DataFrame, country: Country):
     cache_dir: Path = Path(os.getcwd()).joinpath("_cache")
     disk_cache = Cache(
@@ -115,9 +130,12 @@ def _fix_gadm_data(dataframe: DataFrame, country: Country):
     geo_df = gadm_service.gadm_to_geodataframe(gadm_file)
 
     def gadm_lookup(row: Series) -> Series:
-        lat = row["lat"]
-        lon = row["lon"]
-        point = Point(lon, lat)
+        # early out if the lat, lon are not in the correct range of float values, e.g. is nan
+        try:
+            validated = ValidLatLon(lat=row["lat"], lon=row["lon"])
+        except ValidationError:
+            return pd.Series()
+        point = Point(validated.lon, validated.lat)
         contains_point = geo_df["geometry"].apply(lambda geom: point.within(geom))
         df_match = geo_df[contains_point]
         assert (
@@ -181,7 +199,6 @@ def _dataframe_filter(row: Series) -> Optional[Series]:
         data = s.dict()
         return Series(data=data, dtype=object)
     except ValidationError as err:
-        logger.warning(err)
         invalid_row = row.copy()
         invalid_row["is_invalid"] = True
         invalid_row["is_invalid_reason"] = str(err)

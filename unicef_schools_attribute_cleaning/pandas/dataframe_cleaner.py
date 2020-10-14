@@ -80,7 +80,7 @@ def dataframe_cleaner(
     _fix_gadm_data(dataframe=df, country=country)
 
     is_invalid_counts = df["is_invalid"].value_counts()
-    if is_invalid_counts[True] > 0:
+    if True in is_invalid_counts:
         logger.warning(
             f"{is_invalid_counts[True]} invalid records found. See column is_invalid_reason for details."
         )

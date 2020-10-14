@@ -93,6 +93,13 @@ df = dataframe_cleaner(
 )
 ```
 
+```python
+# an optional report on removed column names can be created by using providing a file-like object:
+country = countries.get('HN')
+with open('honduras_columns_report.txt', mode='w', encoding='utf-8') as filehandle:
+    df = dataframe_cleaner(dataframe=src_df, country=country, removed_columns_report=filehandle)
+```
+
 ### Jupyter Notebooks
 
 Each of the source data files for each country has it's own demo notebook:

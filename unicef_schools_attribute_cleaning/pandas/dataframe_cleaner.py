@@ -30,7 +30,7 @@ BUFFER_KM = 5.0
 def dataframe_cleaner(
     dataframe: DataFrame,
     country: Country,
-    removed_columns_report: Optional[TextIO],
+    removed_columns_report: Optional[TextIO] = None,
     is_private: bool = True,
     provider: str = "",
     provider_is_private: bool = True,

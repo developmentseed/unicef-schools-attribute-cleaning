@@ -63,21 +63,9 @@ def dataframe_cleaner(
     if removed_columns_report:
         removed_columns_report.write(report_contents)
 
-    # apply the Schools pydantic model in pandas filter
-    logger.info("filter & validate each school row to the schema...")
-    before = len(df)
+    # apply the Schools pydantic validation model
+    logger.info("validate each school row to the schema...")
     df = df.apply(func=_dataframe_filter, axis=1)
-    if not isinstance(df, DataFrame):
-        # if nothing passes the filter, pandas says the dataframe is instead a Series.
-        raise RuntimeError(
-            "No records passed School validation model, cannot continue, stopping cleaner."
-        )
-    # filter out the None values from previous steps: rows not passing School filter(s)
-    df = df[df["uuid"].notnull()]
-    after = len(df)
-    logger.info(
-        f"filter & validate each school row to the schema -> before: {before} rows, after filter: {after} rows"
-    )
 
     # fill in administrative areas
     logger.info("lookup GADM areas by lat,lon...")

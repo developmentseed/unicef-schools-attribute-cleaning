@@ -68,7 +68,7 @@ class GADMLoaderService:
             logger.info(f"cache hit for: {url}")
             return self._unzip(cached_file)
         logger.info(f"cache miss: fetching {url}")
-        response = get(url=url)
+        response = get(url=url, timeout=10)
         in_memory_file = BytesIO(response.content)
         self.disk_cache.set(url, in_memory_file)
         return self._unzip(in_memory_file)

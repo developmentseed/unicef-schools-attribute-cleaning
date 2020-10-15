@@ -1,5 +1,8 @@
 """unicef_schools_attribute_cleaning module."""
 
+# TODO add python3.9 support after Shapely/GEOS adds it https://github.com/Toblerity/Shapely/blob/master/setup.py#L200-L203
+# TODO add python3.9 to setup.py, ci.yml and tox.ini
+
 from setuptools import find_packages, setup
 
 with open("README.md") as f:
@@ -9,10 +12,11 @@ with open("README.md") as f:
 inst_reqs = [
     "aenum~=2.2.4",
     "click~=7.1.2",
-    "email-validator~=1.1.1",
     "defusedxml~=0.6.0",
     "dependency-injector~=3.33.0",
     "diskcache~=5.0.2",
+    "email-validator~=1.1.1",
+    "fuzzywuzzy==0.18.0",
     "geopandas~=0.8.1",
     "geopy~=2.0.0",
     "iso3166~=1.0.1",
@@ -21,16 +25,16 @@ inst_reqs = [
     "pydantic[email]",
     "pydantic~=1.6.1",
     "python-Levenshtein~=0.12.0",
-    "responses~=0.11.0",
     "requests~=2.24.0",
-    "fuzzywuzzy==0.18.0",
+    "responses~=0.11.0",
+    "shapely~=1.7.1",
     "xlrd~=1.2.0",
 ]
 
 # Dev Requirements
 extra_reqs = {
     "test": ["pytest", "pytest-cov"],
-    "dev": ["pytest==6.0.1", "pytest-cov== 2.10.1", "pre-commit==2.7.1"],
+    "dev": ["pytest==6.0.1", "pytest-cov==2.10.1", "pre-commit==2.7.1", "tox==3.20.1"],
 }
 
 

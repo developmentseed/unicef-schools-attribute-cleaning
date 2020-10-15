@@ -4,7 +4,7 @@ Pandas dataframe support module
 import logging
 import os
 from pathlib import Path
-from typing import Optional
+from typing import Optional, TextIO
 
 import pandas as pd
 from diskcache import Cache
@@ -30,6 +30,7 @@ BUFFER_KM = 5.0
 def dataframe_cleaner(
     dataframe: DataFrame,
     country: Country,
+    removed_columns_report: Optional[TextIO] = None,
     is_private: bool = True,
     provider: str = "",
     provider_is_private: bool = True,
@@ -38,6 +39,7 @@ def dataframe_cleaner(
     Return cleaned and validated DataFrame via the School pydantic model.
     :param pandas dataframe:
     :param country: iso3166 country instance
+    :param removed_columns_report: file-like TextIO object (optional)
     :param is_private: organizational knowledge
     :param provider: organizational knowledge
     :param provider_is_private: organizational knowledge
@@ -57,7 +59,9 @@ def dataframe_cleaner(
     df["provider_is_private"] = provider_is_private
 
     # make the dataframe columns match the School schema.
-    df = standardize_column_names(df)
+    df, report_contents = standardize_column_names(df)
+    if removed_columns_report:
+        removed_columns_report.write(report_contents)
 
     # apply the Schools pydantic validation model
     logger.info("validate each school row to the schema...")

@@ -66,7 +66,7 @@ def _unpack_school_column_aliases() -> Dict[str, List[str]]:
 
 def standardize_column_names(
     dataframe: DataFrame, inplace=True, fuzzy_score_cutoff=90
-) -> DataFrame:
+) -> (DataFrame, str):
     """
     Modify DataFrame's columns to match the School schema. For example can be run
     before instantiating the School model for each DataFrame row.
@@ -165,5 +165,6 @@ def standardize_column_names(
             f"removing columns: {pformat(columns_to_remove)} (not in School schema)"
         )
         df.drop(columns=columns_to_remove, inplace=inplace)
-
-    return df
+    columns_descr = "\n".join(columns_to_remove)
+    columns_removed_report = f"{len(columns_to_remove)} columns removed (not in School schema):\n{columns_descr}"
+    return df, columns_removed_report

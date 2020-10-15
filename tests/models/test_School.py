@@ -58,6 +58,8 @@ src_fields = dict(
     tower_longitude=None,
     owner="pydantic",
     is_private=False,
+    is_invalid=False,
+    is_invalid_reason=None,
     uuid=None,
 )
 

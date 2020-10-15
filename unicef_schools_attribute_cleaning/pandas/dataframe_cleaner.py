@@ -11,7 +11,7 @@ from diskcache import Cache
 from geopy.distance import distance as geodesic_distance
 from iso3166 import Country
 from pandas import DataFrame, Series
-from pydantic import ValidationError
+from pydantic import BaseModel, ValidationError
 from shapely.geometry import Point, Polygon
 
 from unicef_schools_attribute_cleaning.geocoding.GADMLoader import (
@@ -59,35 +59,19 @@ def dataframe_cleaner(
     # make the dataframe columns match the School schema.
     df = standardize_column_names(df)
 
-    logger.info("filtering rows missing lat,lon...")
-    # shortcut/speedup: coercing lat, lon to numeric (the School validator will also filter these out)
-    before = len(df)
-    df = df[pd.to_numeric(df["lat"], errors="coerce").notnull()]
-    df = df[pd.to_numeric(df["lon"], errors="coerce").notnull()]
-    after = len(df)
-    logger.info(
-        f"filtering rows missing lat,lon -> before: {before} rows, after filter: {after} rows"
-    )
-
-    # apply the Schools pydantic model in pandas filter
-    logger.info("filter & validate each school row to the schema...")
-    before = len(df)
+    # apply the Schools pydantic validation model
+    logger.info("validate each school row to the schema...")
     df = df.apply(func=_dataframe_filter, axis=1)
-    if not isinstance(df, DataFrame):
-        # if nothing passes the filter, pandas says the dataframe is instead a Series.
-        raise RuntimeError(
-            "No records passed School validation model, cannot continue, stopping cleaner."
-        )
-    # filter out the None values from previous steps: rows not passing School filter(s)
-    df = df[df["uuid"].notnull()]
-    after = len(df)
-    logger.info(
-        f"filter & validate each school row to the schema -> before: {before} rows, after filter: {after} rows"
-    )
 
     # fill in administrative areas
     logger.info("lookup GADM areas by lat,lon...")
     _fix_gadm_data(dataframe=df, country=country)
+
+    is_invalid_counts = df["is_invalid"].value_counts()
+    if True in is_invalid_counts:
+        logger.warning(
+            f"{is_invalid_counts[True]} invalid records found. See column is_invalid_reason for details."
+        )
 
     # fix up the data types in pandas, otherwise many columns will be object types.
     logger.info("readying pandas data types...")
@@ -113,6 +97,15 @@ def _buffer_for_latitude(point: Point) -> (float, Polygon):
     return buffer_degrees, polygon
 
 
+class ValidLatLon(BaseModel):
+    """
+    A Pydantic model to validate the lat and lon independently of the rest of the School record.
+    """
+
+    lat: Latitude
+    lon: Longitude
+
+
 def _fix_gadm_data(dataframe: DataFrame, country: Country):
     cache_dir: Path = Path(os.getcwd()).joinpath("_cache")
     disk_cache = Cache(
@@ -125,9 +118,12 @@ def _fix_gadm_data(dataframe: DataFrame, country: Country):
     geo_df = gadm_service.gadm_to_geodataframe(gadm_file)
 
     def gadm_lookup(row: Series) -> Series:
-        lat = row["lat"]
-        lon = row["lon"]
-        point = Point(lon, lat)
+        # early out if the lat, lon are not in the correct range of float values, e.g. is nan
+        try:
+            validated = ValidLatLon(lat=row["lat"], lon=row["lon"])
+        except ValidationError:
+            return pd.Series()
+        point = Point(validated.lon, validated.lat)
         contains_point = geo_df["geometry"].apply(lambda geom: point.within(geom))
         df_match = geo_df[contains_point]
         assert (
@@ -186,11 +182,15 @@ def _dataframe_filter(row: Series) -> Optional[Series]:
     """
     try:
         s = School.parse_obj(row.to_dict())
+        s.is_invalid = False
+        s.is_invalid_reason = None
         data = s.dict()
         return Series(data=data, dtype=object)
     except ValidationError as err:
-        logger.warning(err)
-    return None
+        invalid_row = row.copy()
+        invalid_row["is_invalid"] = True
+        invalid_row["is_invalid_reason"] = str(err)
+        return invalid_row
 
 
 def _osm_link(lat: Latitude, lon: Longitude) -> str:
